@@ -31,7 +31,7 @@
                 supportedSubmitMethods: ['get', 'post', 'put', 'delete'],
                 onComplete: function(swaggerApi, swaggerUi){
                     log("Loaded SwaggerUI");
-                    @if(isset($requestHeaders))
+                    @if(isset($config['requestHeaders']))
                         @foreach($requestHeaders as $requestKey => $requestValue)
                             window.authorizations.add("{{$requestKey}}", new ApiKeyAuthorization("{{$requestKey}}", "{{$requestValue}}", "header"));
                         @endforeach
@@ -60,7 +60,7 @@
                 log("key: " + key);
                 if(key && key.trim() != "") {
                     log("added key " + key);
-                    window.authorizations.add("key", new ApiKeyAuthorization("{{Config::get('swaggervel::app.api-key')}}", key, "query"));
+                    window.authorizations.add("key", new ApiKeyAuthorization("{{$config['api-key']}}", key, "query"));
                 }
             })
             window.swaggerUi.load();
