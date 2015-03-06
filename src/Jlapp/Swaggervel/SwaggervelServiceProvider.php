@@ -15,32 +15,15 @@ class SwaggervelServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        $this->package('jlapp/swaggervel');
-
         $this->commands(array('Jlapp\Swaggervel\InstallerCommand'));
 
-        // add swaggervel_extra namespace
-        $configPath = app_path() . "/config/packages/jlapp/swaggervel";
-        Config::addNamespace('swaggervel_extra', $configPath);
+        $this->loadViewsFrom(__DIR__.'/../../views', 'swaggervel');
 
-        $configFiles = File::glob($configPath . "/*.php");
+        $configFiles = File::glob(base_path("config/swagger/*.php"));
         $self = $this;
         foreach ($configFiles as $file) {
             $group = pathinfo($file, PATHINFO_FILENAME);
             require __DIR__ .'/routes.php';
         }
-    }
-
-
-    /**
-     * Get configuration value
-     *
-     * @param string $group
-     * @param string $key
-     * @return $value
-     */
-    public function getSettings($group, $key)
-    {
-        return Config::get("swaggervel_extra::$group.$key", Config::get("swaggervel::$group.$key"));
     }
 }

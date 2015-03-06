@@ -1,7 +1,7 @@
 <?php
 
-Route::any($self->getSettings($group, 'doc-route').'/{page?}', function($page='api-docs.json') use ($self, $group) {
-    $filePath = $self->getSettings($group, 'doc-dir') . "/{$page}";
+Route::any(Config::get("swagger.$group.doc-route").'/{page?}', function($page='api-docs.json') use ($self, $group) {
+    $filePath = Config::get("swagger.$group.doc-dir") . "/{$page}";
 
     if (!File::Exists($filePath)) {
         App::abort(404, "Cannot find {$filePath}");
@@ -13,10 +13,10 @@ Route::any($self->getSettings($group, 'doc-route').'/{page?}', function($page='a
     ));
 });
 
-Route::get($self->getSettings($group, 'api-docs-route'), function() use ($self, $group) {
-    if ($self->getSettings($group, 'generateAlways')) {
-        $appDir = base_path()."/".$self->getSettings($group, 'app-dir');
-        $docDir = $self->getSettings($group, 'doc-dir');
+Route::get(Config::get("swagger.$group.api-docs-route"), function() use ($self, $group) {
+    if (Config::get("swagger.$group.generateAlways")) {
+        $appDir = base_path()."/".Config::get("swagger.$group.app-dir");
+        $docDir = Config::get("swagger.$group.doc-dir");
 
         if (!File::exists($docDir) || is_writable($docDir)) {
             // delete all existing documentation
@@ -31,22 +31,22 @@ Route::get($self->getSettings($group, 'api-docs-route'), function() use ($self, 
             $swaggerVersion = "";
             $excludes       = "";
 
-            $defaultBasePath = $self->getSettings($group, 'default-base-path');
+            $defaultBasePath = Config::get("swagger.$group.default-base-path");
             if ( ! empty($defaultBasePath)) {
                 $basepath .= " --default-base-path '{$defaultBasePath}'";
             }
 
-            $defaultApiVersion = $self->getSettings($group, 'default-api-version');
+            $defaultApiVersion = Config::get("swagger.$group.default-api-version");
             if ( ! empty($defaultApiVersion)) {
                $apiVersion = " --default-api-version '{$defaultApiVersion}'";
             }
 
-            $defaultSwaggerVersion = $self->getSettings($group, 'default-swagger-version');
+            $defaultSwaggerVersion = Config::get("swagger.$group.default-swagger-version");
             if ( ! empty($defaultSwaggerVersion)) {
                $swaggerVersion = " --default-swagger-version '{$defaultSwaggerVersion}'";
             }
 
-            $exludeDirs = $self->getSettings($group, 'excludes');
+            $exludeDirs = Config::get("swagger.$group.excludes");
             if (is_array($exludeDirs) && ! empty($exludeDirs)){
                 $excludes = " -e " . implode(":", $exludeDirs);
             }
@@ -62,7 +62,7 @@ Route::get($self->getSettings($group, 'api-docs-route'), function() use ($self, 
         }
     }
 
-    if ($self->getSettings($group, 'behind-reverse-proxy')) {
+    if (Config::get("swagger.$group.behind-reverse-proxy")) {
         $proxy = Request::server('REMOTE_ADDR');
         Request::setTrustedProxies(array($proxy));
     }
@@ -73,16 +73,16 @@ Route::get($self->getSettings($group, 'api-docs-route'), function() use ($self, 
     $response = Response::make(
         View::make('swaggervel::index', array(
             'secure'         => Request::secure(),
-            'urlToDocs'      => url($self->getSettings($group, 'doc-route')),
-            'requestHeaders' => $self->getSettings($group, 'requestHeaders'),
-            'apiKey'         => $self->getSettings($group, 'api-key'),
+            'urlToDocs'      => url(Config::get("swagger.$group.doc-route")),
+            'requestHeaders' => Config::get("swagger.$group.requestHeaders"),
+            'apiKey'         => Config::get("swagger.$group.api-key"),
             )
         ),
         200
     );
 
-    if ($self->getSettings($group, 'viewHeaders')) {
-        foreach ($self->getSettings($group, 'viewHeaders') as $key => $value) {
+    if (Config::get("swagger.$group.viewHeaders")) {
+        foreach (Config::get("swagger.$group.viewHeaders") as $key => $value) {
             $response->header($key, $value);
         }
     }
